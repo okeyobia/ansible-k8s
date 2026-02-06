@@ -104,6 +104,106 @@ curl -X POST http://localhost:8000/items/ \
   -d '{"name": "Widget", "price": 9.99, "description": "A useful widget"}'
 ```
 
+## Kubernetes Deployment (Minikube)
+
+### Prerequisites
+
+- Minikube installed and running
+- kubectl installed
+- Docker image built
+
+### 1. Build the Docker image for Minikube
+
+First, set up your shell to use Minikube's Docker daemon:
+
+```bash
+eval $(minikube docker-env)
+```
+
+Then build the image:
+
+```bash
+docker build -t fastapi-app:latest .
+```
+
+### 2. Deploy to Minikube
+
+Create the namespace and deploy the application:
+
+```bash
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+```
+
+Or apply all at once:
+
+```bash
+kubectl apply -f k8s/
+```
+
+### 3. Check deployment status
+
+```bash
+# Check pod status
+kubectl get pods -n fastapi
+
+# Check service
+kubectl get svc -n fastapi
+
+# View deployment details
+kubectl describe deployment fastapi-app -n fastapi
+```
+
+### 4. Access the application
+
+Using the Minikube service command:
+
+```bash
+minikube service fastapi-app -n fastapi
+```
+
+This will automatically open the service in your browser.
+
+**API endpoints:**
+- `http://<minikube-ip>:30000/` - Root endpoint
+- `http://<minikube-ip>:30000/docs` - Swagger UI
+- `http://<minikube-ip>:30000/health` - Health check
+
+### 5. View logs
+
+```bash
+# View logs from all pods
+kubectl logs -n fastapi -l app=fastapi-app --tail=50 -f
+
+# View logs from specific pod
+kubectl logs -n fastapi <pod-name>
+```
+
+### 6. Clean up
+
+```bash
+# Remove all resources
+kubectl delete -f k8s/
+
+# Or delete the entire namespace
+kubectl delete namespace fastapi
+```
+
+### Troubleshooting
+
+**Image not found error:**
+- Ensure you've set `eval $(minikube docker-env)` before building
+- Rebuild the image: `docker build -t fastapi-app:latest .`
+
+**Pod not starting:**
+- Check pod logs: `kubectl logs -n fastapi <pod-name>`
+- Check pod events: `kubectl describe pod -n fastapi <pod-name>`
+
+**Service not accessible:**
+- Verify service is created: `kubectl get svc -n fastapi`
+- Check endpoints: `kubectl get endpoints -n fastapi`
+
 ## Docker Deployment
 
 ### Build the Docker image
